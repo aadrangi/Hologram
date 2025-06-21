@@ -1,4 +1,5 @@
 .env
+python-services/venv
 node_modules/
 bun.lock
 .DS_Store
