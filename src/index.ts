@@ -1,4 +1,4 @@
-import { TpaServer, TpaSession, ViewType } from '@augmentos/sdk';
+import { TpaServer, TpaSession, ViewType } from '@augmentos/sdk'; 
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import * as fs from 'fs';
@@ -12,7 +12,7 @@ async function getAsciiArt(imagePath: string) {
   formData.append('file', fs.createReadStream(imagePath));
   // Optionally: formData.append('pad_color', '0');
 
-  const response = await fetch('http://localhost:8000/ascii-art', {
+  const response = await fetch('http://localhost:8080/ascii-art', {
     method: 'POST',
     body: formData as any,
   });
@@ -25,6 +25,7 @@ async function getAsciiArt(imagePath: string) {
 class ExampleAugmentOSApp extends TpaServer {
 
   constructor() {
+    
     super({
       packageName: PACKAGE_NAME,
       apiKey: AUGMENTOS_API_KEY,
