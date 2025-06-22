@@ -7,20 +7,20 @@ const PACKAGE_NAME = process.env.PACKAGE_NAME ?? (() => { throw new Error('PACKA
 const AUGMENTOS_API_KEY = process.env.AUGMENTOS_API_KEY ?? (() => { throw new Error('AUGMENTOS_API_KEY is not set in .env file'); })();
 const PORT = parseInt(process.env.PORT || '3000');
 
-async function getAsciiArt(imagePath: string) {
-  const formData = new FormData();
-  formData.append('file', fs.createReadStream(imagePath));
-  // Optionally: formData.append('pad_color', '0');
+// async function getAsciiArt(imagePath: string) {
+//   const formData = new FormData();
+//   formData.append('file', fs.createReadStream(imagePath));
+//   // Optionally: formData.append('pad_color', '0');
 
-  const response = await fetch('http://localhost:8080/ascii-art', {
-    method: 'POST',
-    body: formData as any,
-  });
+//   const response = await fetch('http://localhost:8080/ascii-art', {
+//     method: 'POST',
+//     body: formData as any,
+//   });
 
-  if (!response.ok) throw new Error('Failed to get ASCII art');
-  const asciiArt = await response.text();
-  return asciiArt;
-}
+//   if (!response.ok) throw new Error('Failed to get ASCII art');
+//   const asciiArt = await response.text();
+//   return asciiArt;
+// }
 
 class ExampleAugmentOSApp extends TpaServer {
 
