@@ -1,7 +1,6 @@
 import { TpaServer, TpaSession, ViewType } from '@augmentos/sdk';
 import * as fs from 'fs';
 import * as path from 'path';
-import FormData from 'form-data';
 
 const PACKAGE_NAME = process.env.PACKAGE_NAME ?? (() => { throw new Error('PACKAGE_NAME is not set in .env file'); })();
 const AUGMENTOS_API_KEY = process.env.AUGMENTOS_API_KEY ?? (() => { throw new Error('AUGMENTOS_API_KEY is not set in .env file'); })();
@@ -10,12 +9,12 @@ const SERVER_PORT = parseInt(process.env.SERVER_PORT || '4000');
 
 async function getAsciiArt(imagePath: string) {
   const formData = new FormData();
-  formData.append('file', fs.createReadStream(imagePath));
+  formData.append('file', Bun.file(imagePath)); // Bun.file is required for file uploads
 
   const response = await fetch(`http://localhost:${SERVER_PORT}/ascii-art`, {
     method: 'POST',
-    body: formData as any,
-    headers: formData.getHeaders(),
+    body: formData
+    // Do NOT set headers manually; Bun handles them
   });
 
   if (!response.ok) {
@@ -26,8 +25,6 @@ async function getAsciiArt(imagePath: string) {
   return asciiArt;
 }
 
-
-
 const uploadFolder = 'c:/image_uploads';
 
 fs.watch(uploadFolder, (eventType, filename) => {
@@ -36,17 +33,44 @@ fs.watch(uploadFolder, (eventType, filename) => {
     // Wait a moment to ensure the file is fully written
     setTimeout(async () => {
       try {
+        // Check if file exists before processing
+        if (!fs.existsSync(imagePath)) {
+          console.warn('File does not exist, skipping:', imagePath);
+          return;
+        }
         const asciiArt = await getAsciiArt(imagePath);
+        latestAsciiArt = asciiArt;
         // Display on glasses
         // You may want to call session.layouts.showTextWall(asciiArt) here
         // Then delete or move the file
-        fs.unlinkSync(imagePath);
+        const maxAttempts = 5;
+        let attempt = 0;
+        function tryDelete() {
+          fs.unlink(imagePath, (err) => {
+            if (err && err.code === 'EPERM' && attempt < maxAttempts) {
+              attempt++;
+              setTimeout(tryDelete, 2000); // Retry after 2000ms
+            } else if (err && err.code !== 'ENOENT') {
+              // Only log errors that are not 'file not found'
+              console.error('Error deleting file:', err);
+            }
+            // If ENOENT, do nothing (file already deleted)
+          });
+        }
+        setTimeout(tryDelete, 2000); // Initial delay to ensure file is released
       } catch (err) {
-        console.error('Error processing image:', err);
+        if (err.code === 'ENOENT') {
+          // File was already deleted, ignore
+          console.warn('File already deleted, skipping:', imagePath);
+        } else {
+          console.error('Error processing image:', err);
+        }
       }
     }, 1000);
   }
 });
+
+let latestAsciiArt: string | null = null;
 
 class ExampleAugmentOSApp extends TpaServer {
 
@@ -63,6 +87,11 @@ class ExampleAugmentOSApp extends TpaServer {
 
     // Show welcome message
     session.layouts.showTextWall("Hologram App is ready.");
+
+    // Show latest ASCII art if available
+    if (latestAsciiArt) {
+      session.layouts.showTextWall(latestAsciiArt);
+    }
 
     // Handle real-time transcription
     // requires microphone permission to be set in the developer console

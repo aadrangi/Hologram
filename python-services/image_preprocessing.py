@@ -14,10 +14,11 @@ def resize_image(image, resolution=glasses_resolution):
     resized_image = cv2.resize(image, (new_width, new_height))
     return resized_image
 
-def resize_and_pad(image, resolution=glasses_resolution, pad_color=0):
+def resize_and_pad(image, resolution=(100, 32), pad_color=0):
     """
     Resize image to fit within resolution, preserving aspect ratio.
     Pad as needed to fill the resolution.
+    Default output is 100 chars wide, 32 lines tall (adjust as needed for your glasses).
     """
     target_w, target_h = resolution
     h, w = image.shape[:2]
@@ -59,12 +60,13 @@ def convert_ascii_image(image, ascii_chars=" ,:;+*?%#@S"):
 if __name__ == "__main__":
     # path to image
     path = "C:/Users/arash/OneDrive/Pictures/IMG_1329.jpg"
-    path = "C:/Users/arash/OneDrive/Pictures/IMG_1331.jpg"
+    # path = "C:/Users/arash/OneDrive/Pictures/IMG_1331.jpg"
     # path = "C:/Users/arash/OneDrive/Pictures/Screenshots/Screenshot 2025-05-31 124509.png"
     # path = "C:/Users/arash/OneDrive/Pictures/IMG_7724.jpg"
 
     output_file = "ascii_art.txt"
     image = cv2.imread(path)
+    # Use new default resolution for ASCII art (100x32)
     resized_image = resize_and_pad(image)
     edge_image = convert_edge_image(resized_image)
     # save the edge image
