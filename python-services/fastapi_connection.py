@@ -2,13 +2,13 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import PlainTextResponse, FileResponse
 import cv2
 import numpy as np
-from image_preprocessing import resize_and_pad, convert_edge_image, convert_ascii_image
+from .image_preprocessing import resize_and_pad, convert_edge_image, convert_ascii_image
 import shutil
 import os
 
 app = FastAPI()
 
-@app.post("c:/image_uploads", response_class=PlainTextResponse)
+@app.post("/ascii-art", response_class=PlainTextResponse)
 async def ascii_art(
     file: UploadFile = File(...),
     pad_color: int = Form(0)

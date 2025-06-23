@@ -18,7 +18,10 @@ async function getAsciiArt(imagePath: string) {
     headers: formData.getHeaders(),
   });
 
-  if (!response.ok) throw new Error('Failed to get ASCII art');
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to get ASCII art: ${response.status} ${response.statusText} - ${errorText}`);
+  }
   const asciiArt = await response.text();
   return asciiArt;
 }
