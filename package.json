@@ -1,6 +1,7 @@
 {
   "name": "augmentos-cloud-example-app",
   "version": "1.0.0",
+  "type":"module",
   "main": "index.js",
   "scripts": {
     "start": "bun src/index.ts",

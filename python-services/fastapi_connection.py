@@ -8,7 +8,7 @@ import os
 
 app = FastAPI()
 
-@app.post("/ascii-art", response_class=PlainTextResponse)
+@app.post("c:/image_uploads", response_class=PlainTextResponse)
 async def ascii_art(
     file: UploadFile = File(...),
     pad_color: int = Form(0)

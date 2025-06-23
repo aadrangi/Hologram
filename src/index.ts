@@ -1,26 +1,49 @@
-import { TpaServer, TpaSession, ViewType } from '@augmentos/sdk'; 
-import fetch from 'node-fetch';
-import FormData from 'form-data';
+import { TpaServer, TpaSession, ViewType } from '@augmentos/sdk';
 import * as fs from 'fs';
+import * as path from 'path';
+import FormData from 'form-data';
 
 const PACKAGE_NAME = process.env.PACKAGE_NAME ?? (() => { throw new Error('PACKAGE_NAME is not set in .env file'); })();
 const AUGMENTOS_API_KEY = process.env.AUGMENTOS_API_KEY ?? (() => { throw new Error('AUGMENTOS_API_KEY is not set in .env file'); })();
-const PORT = parseInt(process.env.PORT || '3000');
+const APPLICATION_PORT = parseInt(process.env.APPLICATION_PORT || '3000');
+const SERVER_PORT = parseInt(process.env.SERVER_PORT || '4000');
 
-// async function getAsciiArt(imagePath: string) {
-//   const formData = new FormData();
-//   formData.append('file', fs.createReadStream(imagePath));
-//   // Optionally: formData.append('pad_color', '0');
+async function getAsciiArt(imagePath: string) {
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(imagePath));
 
-//   const response = await fetch('http://localhost:8080/ascii-art', {
-//     method: 'POST',
-//     body: formData as any,
-//   });
+  const response = await fetch(`http://localhost:${SERVER_PORT}/ascii-art`, {
+    method: 'POST',
+    body: formData as any,
+    headers: formData.getHeaders(),
+  });
 
-//   if (!response.ok) throw new Error('Failed to get ASCII art');
-//   const asciiArt = await response.text();
-//   return asciiArt;
-// }
+  if (!response.ok) throw new Error('Failed to get ASCII art');
+  const asciiArt = await response.text();
+  return asciiArt;
+}
+
+
+
+const uploadFolder = 'c:/image_uploads';
+
+fs.watch(uploadFolder, (eventType, filename) => {
+  if (filename && /\.(jpg|jpeg|png)$/i.test(filename)) {
+    const imagePath = path.join(uploadFolder, filename);
+    // Wait a moment to ensure the file is fully written
+    setTimeout(async () => {
+      try {
+        const asciiArt = await getAsciiArt(imagePath);
+        // Display on glasses
+        // You may want to call session.layouts.showTextWall(asciiArt) here
+        // Then delete or move the file
+        fs.unlinkSync(imagePath);
+      } catch (err) {
+        console.error('Error processing image:', err);
+      }
+    }, 1000);
+  }
+});
 
 class ExampleAugmentOSApp extends TpaServer {
 
@@ -29,14 +52,14 @@ class ExampleAugmentOSApp extends TpaServer {
     super({
       packageName: PACKAGE_NAME,
       apiKey: AUGMENTOS_API_KEY,
-      port: PORT,
+      port: APPLICATION_PORT,
     });
   }
 
   protected async onSession(session: TpaSession, sessionId: string, userId: string): Promise<void> {
 
     // Show welcome message
-    session.layouts.showTextWall("Example App is ready!");
+    session.layouts.showTextWall("Hologram App is ready.");
 
     // Handle real-time transcription
     // requires microphone permission to be set in the developer console
